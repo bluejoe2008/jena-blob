@@ -1,19 +1,16 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
-import jenablob.Blob;
-import jenablob.BlobLiteral;
-import jenablob.BlobTdbFactory;
-import jenablob.ModelConfig;
-import jenablob.io.InputStreamBlob;
+import jenablob.lit.Blob;
+import jenablob.lit.BlobLiteral;
+import jenablob.lit.InputStreamBlob;
+import jenablob.tdb.BlobTdbFactory;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-
-import util.StreamUtils;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -32,7 +29,7 @@ public class JenaBlobTest
 
 	public JenaBlobTest() throws IOException
 	{
-		_source = StreamUtils.stream2String(new FileInputStream(new File("e:\\capacity-scheduler.xml")));
+		_source = IOUtils.toString(new FileInputStream(new File("e:\\capacity-scheduler.xml")));
 	}
 
 	@Test
@@ -50,7 +47,6 @@ public class JenaBlobTest
 	public void testMemModel() throws Exception
 	{
 		Model memModel = createTestModel();
-		memModel.write(System.out, "TURTLE");
 		doTestModel(memModel);
 	}
 
@@ -64,19 +60,29 @@ public class JenaBlobTest
 		FileUtils.deleteDirectory(dir1);
 		FileUtils.deleteDirectory(dir2);
 
-		Model model1 = BlobTdbFactory.createModel(dir1, new ModelConfig());
+		Model model1 = BlobTdbFactory.createModel(dir1);
 		model1.add(createTestModel());
-		model1.write(System.out, "TURTLE");
 		doTestModel(model1);
+
+		//update
+		model1.listStatements().next().changeObject("new string");
+		model1.write(System.out, "TURTLE");
+		model1.listStatements().next().changeObject(BlobLiteral.create(new File("e:\\capacity-scheduler.xml")));
+		doTestModel(model1);
+
 		model1.close();
 
 		//copying files
 		FileUtils.copyDirectory(dir1, dir2);
 
+		model1 = BlobTdbFactory.createModel(dir1);
+		model1.removeAll();
+
 		//read
-		Model model2 = BlobTdbFactory.createModel(dir2, new ModelConfig());
-		model2.write(System.out, "TURTLE");
+		Model model2 = BlobTdbFactory.createModel(dir2);
 		doTestModel(model2);
+		//delete
+		model2.removeAll();
 		model2.close();
 	}
 
@@ -90,14 +96,23 @@ public class JenaBlobTest
 
 	private void doTestModel(Model model) throws IOException
 	{
+		model.write(System.out, "TURTLE");
+		doTestIter(model);
+		doTestQuery(model, "select ?s ?p ?o where {?s ?p ?o}");
+		//doTestQuery(model, "select ?s ?p ?o where {?s ?p ?o. FILTER(ISBLOB(?o) & length(?o)>10)}");
+	}
+
+	private void doTestIter(Model model) throws IOException
+	{
 		StmtIterator it = model.listStatements();
 		Assert.assertTrue(it.hasNext());
 		Literal lit = it.next().getLiteral();
 		Assert.assertTrue(lit.getValue() instanceof Blob);
-		InputStream is = ((Blob) lit.getValue()).getInputStream();
-		Assert.assertEquals(_source, StreamUtils.stream2String(is));
+		Assert.assertEquals(_source, ((Blob) lit.getValue()).readString());
+	}
 
-		String queryString = "select ?s ?p ?o where {?s ?p ?o}";
+	private void doTestQuery(Model model, String queryString) throws IOException
+	{
 		Query query = QueryFactory.create(queryString);
 		QueryExecution qexec = QueryExecutionFactory.create(query, model);
 
@@ -105,12 +120,9 @@ public class JenaBlobTest
 		Assert.assertTrue(results.hasNext());
 
 		QuerySolution soln = results.nextSolution();
-		lit = soln.getLiteral("o");
+		Literal lit = soln.getLiteral("o");
 		Assert.assertTrue(BlobLiteral.isBlobLiteral(lit));
-		is = BlobLiteral.getBlob(lit).getInputStream();
-		Assert.assertEquals(_source, StreamUtils.stream2String(is));
-		is.close();
-
+		Assert.assertEquals(_source, ((Blob) lit.getValue()).readString());
 		qexec.close();
 	}
 }
