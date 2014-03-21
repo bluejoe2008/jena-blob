@@ -6,6 +6,9 @@ import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.function.FunctionBase1;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 @FunctionURI("http://bluejoe.cn/jenablob#digest")
 public class GetDigest extends FunctionBase1
 {

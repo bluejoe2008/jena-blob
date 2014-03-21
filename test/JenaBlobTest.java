@@ -25,6 +25,9 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 public class JenaBlobTest
 {
 	byte[] INPUT_SOURCE;
@@ -110,7 +113,7 @@ public class JenaBlobTest
 
 	private void doTestBlobSPARQLQuery(Model model) throws IOException
 	{
-		String queryString = "PREFIX blob: <http://bluejoe.cn/jenablob#> select ?s ?p ?o (blob:isBlob(?o) as ?v1) (blob:length(?o) as ?v2) (blob:digest(?o) as ?v3) (blob:mark(?o) as ?v4) (blob:mark(?o,6) as ?v5) (blob:mark(?o,0, 6) as ?v6) where {?s ?p ?o. FILTER (blob:isBlob(?o))}";
+		String queryString = "PREFIX blob: <http://bluejoe.cn/jenablob#> select ?s ?p ?o (blob:isBlob(?o) as ?v1) (blob:length(?o) as ?v2) (blob:digest(?o) as ?v3) (blob:mark(?o) as ?v4) (blob:mark(?o,6) as ?v5) (blob:mark(?o,0, 6) as ?v6) (blob:string(?o) as ?v7) (blob:bytes(?o) as ?v8) where {?s ?p ?o. FILTER (blob:isBlob(?o))}";
 		Query query = QueryFactory.create(queryString, Syntax.syntaxSPARQL_11);
 		QueryExecution qexec = QueryExecutionFactory.create(query, model);
 
@@ -126,6 +129,7 @@ public class JenaBlobTest
 		Assert.assertEquals(DigestUtils.md5Hex(INPUT_SOURCE), soln.getLiteral("v3").getValue());
 		Assert.assertEquals("GIF89a", soln.getLiteral("v5").getValue());
 		Assert.assertEquals("GIF89a", soln.getLiteral("v6").getValue());
+		Assert.assertEquals(new String(INPUT_SOURCE), soln.getLiteral("v7").getValue());
 		qexec.close();
 	}
 

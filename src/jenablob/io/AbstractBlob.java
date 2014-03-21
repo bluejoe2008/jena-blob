@@ -11,8 +11,42 @@ import jenablob.InputStreamConsumer;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 public abstract class AbstractBlob implements Blob
 {
+	private String _digest = "";
+
+	private long _length;
+
+	private byte[] _mark = {};
+
+	public String getDigest()
+	{
+		return _digest;
+	}
+
+	protected abstract InputStream getInputStream() throws IOException;
+
+	public byte[] getMark()
+	{
+		return _mark;
+	}
+
+	public byte[] getMark(int count)
+	{
+		if (count <= 0)
+			return new byte[0];
+
+		if (count >= _mark.length)
+			return _mark;
+
+		byte[] trim = new byte[count];
+		new ByteArrayInputStream(_mark).read(trim, 0, count);
+		return trim;
+	}
+
 	public byte[] getMark(int startIndex, int count)
 	{
 		if (startIndex < 0)
@@ -29,87 +63,10 @@ public abstract class AbstractBlob implements Blob
 		return trim;
 	}
 
-	public byte[] getMark(int count)
-	{
-		if (count <= 0)
-			return new byte[0];
-
-		if (count >= _mark.length)
-			return _mark;
-
-		byte[] trim = new byte[count];
-		new ByteArrayInputStream(_mark).read(trim, 0, count);
-		return trim;
-	}
-
-	private long _length;
-
 	public long length()
 	{
 		return _length;
 	}
-
-	protected void syncMark() throws IOException
-	{
-		setMark(read(new InputStreamConsumer<byte[]>()
-		{
-			public byte[] consume(InputStream is) throws IOException
-			{
-				byte[] bytes = new byte[Env.getBlobMarkChars()];
-				int read = is.read(bytes);
-				if (read > 0)
-				{
-					byte[] trim = new byte[read];
-					new ByteArrayInputStream(bytes).read(trim, 0, read);
-					return trim;
-				}
-
-				return new byte[0];
-			}
-		}));
-	}
-
-	protected void syncDigest() throws IOException
-	{
-		setDigest(read(new InputStreamConsumer<String>()
-		{
-			public String consume(InputStream is) throws IOException
-			{
-				return DigestUtils.md5Hex(is);
-			}
-		}));
-	}
-
-	protected void setLength(long length)
-	{
-		_length = length;
-	}
-
-	public String getDigest()
-	{
-		return _digest;
-	}
-
-	protected void setDigest(String digest)
-	{
-		_digest = digest;
-	}
-
-	private String _digest = "";
-
-	private byte[] _mark = {};
-
-	public byte[] getMark()
-	{
-		return _mark;
-	}
-
-	public void setMark(byte[] mark)
-	{
-		_mark = mark;
-	}
-
-	protected abstract InputStream getInputStream() throws IOException;
 
 	public <T> T read(InputStreamConsumer<T> consumer) throws IOException
 	{
@@ -131,6 +88,17 @@ public abstract class AbstractBlob implements Blob
 		return t;
 	}
 
+	public byte[] readBytes() throws IOException
+	{
+		return read(new InputStreamConsumer<byte[]>()
+		{
+			public byte[] consume(InputStream is) throws IOException
+			{
+				return IOUtils.toByteArray(is);
+			}
+		});
+	}
+
 	public String readString() throws IOException
 	{
 		return read(new InputStreamConsumer<String>()
@@ -143,16 +111,30 @@ public abstract class AbstractBlob implements Blob
 		});
 	}
 
-	public byte[] readBytes() throws IOException
+	protected void setDigest(String digest)
 	{
-		return read(new InputStreamConsumer<byte[]>()
-		{
+		_digest = digest;
+	}
 
-			public byte[] consume(InputStream is) throws IOException
+	protected void setLength(long length)
+	{
+		_length = length;
+	}
+
+	public void setMark(byte[] mark)
+	{
+		_mark = mark;
+	}
+
+	protected void syncDigest() throws IOException
+	{
+		setDigest(read(new InputStreamConsumer<String>()
+		{
+			public String consume(InputStream is) throws IOException
 			{
-				return IOUtils.toByteArray(is);
+				return DigestUtils.md5Hex(is);
 			}
-		});
+		}));
 	}
 
 	public void syncLength() throws IOException
@@ -174,6 +156,26 @@ public abstract class AbstractBlob implements Blob
 				}
 
 				return count;
+			}
+		}));
+	}
+
+	protected void syncMark() throws IOException
+	{
+		setMark(read(new InputStreamConsumer<byte[]>()
+		{
+			public byte[] consume(InputStream is) throws IOException
+			{
+				byte[] bytes = new byte[Env.getBlobMarkChars()];
+				int read = is.read(bytes);
+				if (read > 0)
+				{
+					byte[] trim = new byte[read];
+					new ByteArrayInputStream(bytes).read(trim, 0, read);
+					return trim;
+				}
+
+				return new byte[0];
 			}
 		}));
 	}

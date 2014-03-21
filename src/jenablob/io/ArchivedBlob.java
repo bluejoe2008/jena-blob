@@ -6,6 +6,9 @@ import java.io.InputStream;
 import jenablob.Blob;
 import jenablob.Env;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 public class ArchivedBlob extends AbstractBlob implements Blob
 {
 	private String _fileHandle;

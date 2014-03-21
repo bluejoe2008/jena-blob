@@ -11,6 +11,9 @@ import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.function.FunctionBase;
 import com.hp.hpl.jena.sparql.util.Utils;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 @FunctionURI("http://bluejoe.cn/jenablob#markBytes")
 public class GetMarkBytes extends FunctionBase
 {

@@ -9,6 +9,9 @@ import com.hp.hpl.jena.sparql.expr.nodevalue.NodeValueString;
 import com.hp.hpl.jena.sparql.function.FunctionBase2;
 import com.hp.hpl.jena.sparql.function.FunctionEnv;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 @FunctionURI("http://bluejoe.cn/jenablob#var")
 public class DefineVar extends FunctionBase2
 {

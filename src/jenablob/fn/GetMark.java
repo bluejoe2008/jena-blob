@@ -4,6 +4,9 @@ import java.util.List;
 
 import com.hp.hpl.jena.sparql.expr.NodeValue;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 @FunctionURI("http://bluejoe.cn/jenablob#mark")
 public class GetMark extends GetMarkBytes
 {

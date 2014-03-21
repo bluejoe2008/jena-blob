@@ -13,6 +13,9 @@ import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 public class BlobLiteral
 {
 	private static Model _model = ModelFactory.createDefaultModel();

@@ -12,6 +12,9 @@ import com.hp.hpl.jena.tdb.store.DatasetGraphTDB;
 import com.hp.hpl.jena.tdb.store.TripleTable;
 import com.hp.hpl.jena.tdb.transaction.DatasetGraphTransaction;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 public class BlobModelFactory
 {
 	static

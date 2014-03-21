@@ -12,6 +12,9 @@ import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.tdb.nodetable.NodeTupleTable;
 import com.hp.hpl.jena.tdb.store.TripleTable;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 public class TripleTableProxy extends TripleTable
 {
 	private BlobWriter _blobWriter;

@@ -13,6 +13,9 @@ import com.hp.hpl.jena.datatypes.BaseDatatype;
 import com.hp.hpl.jena.datatypes.DatatypeFormatException;
 import com.hp.hpl.jena.graph.impl.LiteralLabel;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 public class BlobDataType extends BaseDatatype
 {
 	public static final BlobDataType BLOB_TYPE = new BlobDataType();

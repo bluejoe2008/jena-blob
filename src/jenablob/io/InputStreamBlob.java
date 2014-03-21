@@ -7,6 +7,9 @@ import jenablob.Blob;
 
 import org.springframework.core.io.InputStreamSource;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 public class InputStreamBlob extends AbstractBlob implements Blob
 {
 	private InputStreamSource _source;

@@ -10,6 +10,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
+/**
+ * @author bluejoe2008@gmail.com
+ */
 public class FileSystemBlobStorage implements BlobStorage
 {
 	class FileSystemBlobWriter implements BlobWriter
