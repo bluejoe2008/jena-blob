@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.log4j.lf5.util.StreamUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 public class FileSystemBlobStorage implements BlobStorage
 {
@@ -33,16 +34,25 @@ public class FileSystemBlobStorage implements BlobStorage
 			String fileName = String.format("%s/%d.bin", _id, System.currentTimeMillis());
 			File file = new File(_rootDir, fileName);
 			file.getParentFile().mkdirs();
-			FileOutputStream os = new FileOutputStream(file);
-			StreamUtils.copy(is, os);
-			os.close();
+			FileOutputStream fos = new FileOutputStream(file);
+			IOUtils.copyLarge(is, fos);
+			fos.close();
+
+			String digestFileName = fileName.replaceAll("\\.bin", "\\.md5");
+			File digestFile = new File(_rootDir, digestFileName);
+			FileInputStream fis = new FileInputStream(file);
+			String digest = DigestUtils.md5Hex(fis);
+			FileOutputStream dfos = new FileOutputStream(digestFile);
+			dfos.write(digest.getBytes());
+			dfos.close();
+
 			return fileName;
 		}
 	}
 
 	private File _rootDir;
 
-	FileSystemBlobStorage(File rootDir)
+	public FileSystemBlobStorage(File rootDir)
 	{
 		_rootDir = rootDir;
 	}
@@ -50,6 +60,7 @@ public class FileSystemBlobStorage implements BlobStorage
 	public void delete(String handle) throws IOException
 	{
 		new File(_rootDir, handle).delete();
+		new File(_rootDir, handle.replaceAll("\\.bin", "\\.md5")).delete();
 	}
 
 	public BlobWriter getNamedWriter(String clientName)
@@ -58,8 +69,24 @@ public class FileSystemBlobStorage implements BlobStorage
 		return new FileSystemBlobWriter(this, id);
 	}
 
-	public InputStream open(String handle) throws IOException
+	public InputStream open(String handle, long length, String digest) throws IOException
 	{
-		return new FileInputStream(new File(_rootDir, handle));
+		//TODO: check md5 digest
+		File file = new File(_rootDir, handle);
+		if (file.length() != length)
+		{
+			throw new BadBlobInputStreamException(handle);
+		}
+
+		File digestFile = new File(_rootDir, handle.replaceAll("\\.bin", "\\.md5"));
+		FileInputStream fis = new FileInputStream(digestFile);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		IOUtils.copy(fis, baos);
+		if (!digest.equals(new String(baos.toByteArray())))
+		{
+			throw new BadBlobInputStreamException(handle);
+		}
+
+		return new FileInputStream(file);
 	}
 }

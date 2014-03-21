@@ -9,5 +9,5 @@ public interface BlobStorage
 
 	BlobWriter getNamedWriter(String clientName);
 
-	InputStream open(String handle) throws IOException;
+	InputStream open(String handle, long length, String digest) throws IOException;
 }
