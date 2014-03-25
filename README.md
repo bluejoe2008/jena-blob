@@ -21,8 +21,10 @@ the following codes illustrate how to add a BLOB as a literal:
 		Literal lit = BlobLiteral.create(INPUT_FILE);
 		SAMPLE_MODEL.add(SAMPLE_MODEL.createResource("http://s"), SAMPLE_MODEL.createProperty("http://p"), lit);
 
-write blobs
+models and blob storage
 =========
+RDF statements can be saved in RDF models. Simply, blob can be saved in RDF models as a string in certain encoding (BASE64Encoding, for example). However, it is obviously unfeasible for large blobs due to both large size for RDF statements and long time cost for loading. A good idea is to save blobs in file systems, databases, or other stream storage services.
+
 RDF statements with blob values can be saved in models, BlobModelFactory provides createXXXModel() methods to create such models:
 * createMemModel() : creates a plain in-memory model, blobs can be added but not be persisted
 * createMemModel(BlobStorage blobStorage) : creates an in-memory model, blobs will be persisted in blobStorage
