@@ -7,6 +7,7 @@ jena-blob enables RDF store to manage both structured data and unstructred data
 
 visit https://github.com/bluejoe2008/jena-blob/blob/master/test/JenaBlobTest.java for examples
 
+
 create blob objects in Java
 =========
 a blob object is always accessed via an InputStream interface, and BlobLiteral provides several create() methods to create blob objects:
@@ -49,4 +50,28 @@ the following codes illustrate BLOB representation in a FileSystemBlobStorage:
 
 query on blobs
 =========
+jena-blob adds some additional information on blob literals which enables blob query. The information are listed as below:
+* length : length of a blob, in long integer
+* digest : md5 digest string of a blob, in String (using org.apache.commons.codec.digest.DigestUtils.md5Hex(is))
+* mark : the first 32-bytes of the blob, in byte[]
+
+for a Blob object, length()/getDigest()/getMark() methods can be used to retrieve such information.
+
+jena-blob also provides FILTER functions to enable SPARQL query on blobs:
+* isBlob() : to determine a literal is a blob or not
+* length() : tells the length of a blob
+* digest() : tells the digest string of the blob
+* mark() : to retrieve the mark of the blob
+* mark(size) : to retrieve first size-bytes of mark
+* mark(beginning, size) : to retrieve size-bytes of mark, from the beginning of beginning
+
+an example SPARQL query is shown as below:
+
+		PREFIX blob: <http://bluejoe.cn/jenablob#>
+		select ?s ?p ?o
+		(blob:isBlob(?o) as ?v1) (blob:length(?o) as ?v2)
+		(blob:digest(?o) as ?v3) (blob:mark(?o) as ?v4)
+		(blob:mark(?o,6) as ?v5) (blob:mark(?o,0, 6) as ?v6)
+		(blob:string(?o) as ?v7) (blob:bytes(?o) as ?v8)
+		where {?s ?p ?o. FILTER (blob:isBlob(?o))}
 
