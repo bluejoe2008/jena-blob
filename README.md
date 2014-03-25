@@ -67,11 +67,12 @@ jena-blob also provides FILTER functions to enable SPARQL query on blobs:
 
 an example SPARQL query is shown as below:
 
+		
 		PREFIX blob: <http://bluejoe.cn/jenablob#>
 		select ?s ?p ?o
-		(blob:isBlob(?o) as ?v1) (blob:length(?o) as ?v2)
-		(blob:digest(?o) as ?v3) (blob:mark(?o) as ?v4)
-		(blob:mark(?o,6) as ?v5) (blob:mark(?o,0, 6) as ?v6)
+		(blob:isBlob(?o) as ?v1) (blob:length(?o) as ?v2)	(blob:digest(?o) as ?v3)
+		(blob:mark(?o) as ?v4) (blob:mark(?o,6) as ?v5) (blob:mark(?o,0, 6) as ?v6)
 		(blob:string(?o) as ?v7) (blob:bytes(?o) as ?v8)
 		where {?s ?p ?o. FILTER (blob:isBlob(?o))}
+		
 
