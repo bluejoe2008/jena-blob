@@ -3,30 +3,30 @@ jena-blob
 
 write/read/query BLOBs(binary large objects) in Jena framework
 
-jena-blob enables RDF store to manage both structured data and unstructred data 
+jena-blob enables RDF stores to manage both structured data and unstructred data 
 
-visit https://github.com/bluejoe2008/jena-blob/blob/master/test/JenaBlobTest.java for examples
+visit https://github.com/bluejoe2008/jena-blob/blob/master/test/JenaBlobTest.java for example usage
 
 
 create blob objects in Java
 =========
-a blob object is always accessed via an InputStream interface, and BlobLiteral provides several create() methods to create blob objects:
+a blob object is always accessed via an InputStream interface. BlobLiteral class provides several create() methods to create blob objects:
 * public static Literal create(byte[] bytes) : creates a blob from a byte array
 * public static Literal create(File file) : creates a blob which contents come from a local file
-* public static Literal create(InputStreamSource source) : creates a blob which contents come from a spring framework InputStreamSource
+* public static Literal create(InputStreamSource source) : creates a blob which contents come from a org.springframework.core.io.InputStreamSource
 * public static Literal create(String text) : create a blob from a byte array of a string
 
 the following codes illustrate how to add a BLOB as a literal:
 
 		SAMPLE_MODEL = ModelFactory.createDefaultModel();
-		Literal lit = BlobLiteral.create(INPUT_FILE);
+		Literal lit = BlobLiteral.create(new File("./1.gif"));
 		SAMPLE_MODEL.add(SAMPLE_MODEL.createResource("http://s"), SAMPLE_MODEL.createProperty("http://p"), lit);
 
 models and blob storage
 =========
-RDF statements can be saved in RDF models. Simply, blob can be saved in RDF models as a string in certain encoding (BASE64Encoding, for example). However, it is obviously unfeasible for large blobs due to both large size for RDF statements and long time cost for loading. A good idea is to save blobs in file systems, databases, or other stream storage services.
+As we know, RDF statements can be saved in RDF models. Simply, a blob can be saved in RDF models as a string in certain encoding (BASE64Encoding, for example). However, it is not feasible for large blobs due to large size for RDF statements and long time costs for storing/loading.
 
-BlobStorage is provided to tells where and how to save/load blobs. There are several types of BlobStorages are provided in jena-blob:
+A good idea for blob storage is to choose file systems, databases, or other stream storage services. BlobStorage interface is defined to tells where and how to save/load blobs. Several types of BlobStorages are provided in jena-blob:
 
 * ByteArrayBlobStorage : save blobs in byte arrays
 * FileSystemBlobStorage : save blobs in local file systems
@@ -39,7 +39,7 @@ BlobModelFactory provides several createXXXModel() methods to create models:
 * createTDBModel(File dir) : creates a TDB model, blobs will be persisted in local dir/blob
 * createTDBModel(File tdbDir, BlobStorage blobStorage) : creates a TDB model, blobs will be persisted in blobStorage
 
-the following codes illustrate BLOB representation in a ByteArrayBlobStorage:
+the following codes illustrate blob representation in a ByteArrayBlobStorage:
 
 		<http://s>  <http://p>  "content:R0lGODlhRgAgALP/AP///xAQEBgYGCEhITExMUpKSlpaWmtra3t7e4yMjJycnLW1tcbG
 		xt7e3vf39wAAACwAAAAARgAgAEAE/xDISau9OOu923CToQBNwFXOd64aAQJj4wQGILIAIjXcPAKOwoPG4CwQiBfjASLwLIVFJZGQK
@@ -53,14 +53,14 @@ the following codes illustrate BLOB representation in a ByteArrayBlobStorage:
 		d3c3a5554e8021d,mark:R0lGODlhRgAgALP/AP///xAQEBgYGCEhITExMUpKSlo="^^<urn:x-hp-dt:blob-bytes> .
 		
 
-the following codes illustrate BLOB representation in a FileSystemBlobStorage:
+the following codes illustrate blob representation in a FileSystemBlobStorage:
 
 		<http://s>  <http://p>  "handle:1395714660338.bin,length:628,digest:5ecb3255a12ef30a9d3c3a5554e8021d
 		,mark:R0lGODlhRgAgALP/AP///xAQEBgYGCEhITExMUpKSlo="^^<urn:x-hp-dt.blob-file> .
 
 query on blobs
 =========
-jena-blob adds some additional information on blob literals which enables blob query. The information are listed as below:
+jena-blob adds some additional information on blob literals which enables blob query:
 * length : length of a blob, in long integer
 * digest : md5 digest string of a blob, in String (using org.apache.commons.codec.digest.DigestUtils.md5Hex(is))
 * mark : the first 32-bytes of the blob, in byte[]
