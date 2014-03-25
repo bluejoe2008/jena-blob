@@ -66,13 +66,13 @@ public class BlobModelFactory
 	/**
 	 * creates a in-memory model with blob persistence
 	 * 
-	 * @param storage
+	 * @param blobStorage
 	 * @return
 	 * @throws Exception
 	 */
-	public static Model createMemModel(BlobStorage storage)
+	public static Model createMemModel(BlobStorage blobStorage)
 	{
-		return new ModelCom(new BlobGraphMem(storage));
+		return new ModelCom(new BlobGraphMem(blobStorage));
 	}
 
 	public static Model createMemModel(File blobDir)
@@ -85,11 +85,11 @@ public class BlobModelFactory
 		return createTDBModel(dir, new FileSystemBlobStorage(new File(dir, "blob")));
 	}
 
-	public static Model createTDBModel(File tdbDir, BlobStorage storage) throws Exception
+	public static Model createTDBModel(File tdbDir, BlobStorage blobStorage) throws Exception
 	{
 		Model model = TDBFactory.createDataset(tdbDir.getPath()).getDefaultModel();
 		GraphTDB graph = (GraphTDB) model.getGraph();
-		return new ModelCom(new BlobGraphTDB((DatasetGraphTDB) graph.getDataset(), graph.getGraphName(), storage));
+		return new ModelCom(new BlobGraphTDB((DatasetGraphTDB) graph.getDataset(), graph.getGraphName(), blobStorage));
 	}
 
 	public static int getBlobMarkChars()
