@@ -25,15 +25,26 @@ models and blob storage
 =========
 RDF statements can be saved in RDF models. Simply, blob can be saved in RDF models as a string in certain encoding (BASE64Encoding, for example). However, it is obviously unfeasible for large blobs due to both large size for RDF statements and long time cost for loading. A good idea is to save blobs in file systems, databases, or other stream storage services.
 
-RDF statements with blob values can be saved in models, BlobModelFactory provides createXXXModel() methods to create such models:
+BlobStorage is provided to tells where and how to save/load blobs. There are several types of BlobStorages are provided in jena-blob:
+
+* ByteArrayBlobStorage : save blobs in byte arrays
+* FileSystemBlobStorage : save blobs in local file systems
+* KeepAsIsBlobStorage : do not save blobs, only for in-memory blob reading
+
+BlobModelFactory provides several createXXXModel() methods to create models:
 * createMemModel() : creates a plain in-memory model, blobs can be added but not be persisted
 * createMemModel(BlobStorage blobStorage) : creates an in-memory model, blobs will be persisted in blobStorage
 * createMemModel(File blobDir) : creates an in-memory model, blobs will be persisted in local blobDir
 * createTDBModel(File dir) : creates a TDB model, blobs will be persisted in local dir/blob
 * createTDBModel(File tdbDir, BlobStorage blobStorage) : creates a TDB model, blobs will be persisted in blobStorage
 
+the following codes illustrate BLOB representation in a ByteArrayBlobStorage:
+		<http://s>  <http://p>  "content:R0lGODlhRgAgALP/AP///xAQEBgYGCEhITExMUpKSlpaWmtra3t7e4yMjJycnLW1tcbGxt7e3vf39wAAACwAAAAARgAgAEAE/xDISau9OOu923CToQBNwFXOd64aAQJj4wQGILIAIjXcPAKOwoPG4CwQiBfjASLwLIVFJZGQKHQVxfPSeBQXBODhIdjiKo3C61Q+TxwHd6jg8UoQtUzDkBg8pCspDmskAj8ZBjJxEgk1B0UUDYcWDgKAbzUOBFUTUg0IjUB0JwlMO4tABg8PBwuERgcBQwR8lxMBnBm2ckADvL/AEx5no79hvAcFJA8FAwWqZhgIQgKBPwoDzgcEphkMWAClD6WeA5BGuxqV4Aqr6RdHEpeqq4SD6tl5EwwJrwU6KR64wOFL34Iaey74upAgzZt85xi8IkGgCIMAExmOm/BghINuEv8cKBAC8gCqFOAmXLkwg0e7IZw+5gpGsyavBdFs6syAYNKGhTt/GXiXIcovUDgQmPkmYegZARlXMCCqS5ipA1UYXIlK4cg9OQ0WLNBypouMArh48DnB7UBODAk8yQg5wOeFiA8M+MmzQIWGBAem4UjgZEcBBQHsXkAAaMGSAwrCBKFqgeyKPi80rUKl7pjlBasKcD6hlICyDQugkvBTjNQIVzs6mkRBGcHGSI1Ox25Qxw5XCx8UnDMHACMK3ccnOej7ZMk5ClEGOeWQhqkEAlJ6XihcASeARxZGhx/Ag8BroxkUGNBtIM8DDNsiqSaBPGR9CrMBDFiQIMB+01GV8oQpWRL8sxwC3IggEXS2OLAeTrwtMIZdhO2ABCGIZbScBnP98huBQYWoUwQAOw==,length:628,digest:5ecb3255a12ef30a9d3c3a5554e8021d,mark:R0lGODlhRgAgALP/AP///xAQEBgYGCEhITExMUpKSlo="^^<urn:x-hp-dt:blob-bytes> .
+		
 
+the following codes illustrate BLOB representation in a FileSystemBlobStorage:
+		<http://s>  <http://p>  "handle:1395714660338.bin,length:628,digest:5ecb3255a12ef30a9d3c3a5554e8021d,mark:R0lGODlhRgAgALP/AP///xAQEBgYGCEhITExMUpKSlo="^^<urn:x-hp-dt.blob-file> .
 
-read bolbs
+query on blobs
 =========
 
