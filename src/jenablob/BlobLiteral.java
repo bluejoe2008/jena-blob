@@ -3,7 +3,8 @@ package jenablob;
 import java.io.File;
 import java.io.IOException;
 
-import jenablob.io.InputStreamBlob;
+import jenablob.model.BlobModelFactory;
+import jenablob.type.InputStreamBlob;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
@@ -11,19 +12,13 @@ import org.springframework.core.io.InputStreamSource;
 
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 /**
  * @author bluejoe2008@gmail.com
  */
 public class BlobLiteral
 {
-	private static Model _model = ModelFactory.createDefaultModel();
-
-	static
-	{
-		Env.init();
-	}
+	private static Model _model = BlobModelFactory.createMemModel();
 
 	public static Literal create(byte[] bytes) throws IOException
 	{

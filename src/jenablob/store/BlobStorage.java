@@ -1,16 +1,26 @@
 package jenablob.store;
 
 import java.io.IOException;
-import java.io.InputStream;
+
+import jenablob.Blob;
+
+import com.hp.hpl.jena.datatypes.RDFDatatype;
 
 /**
  * @author bluejoe2008@gmail.com
  */
 public interface BlobStorage
 {
-	void delete(String handle) throws IOException;
+	void delete(Blob blob) throws IOException;
 
-	BlobWriter getNamedWriter(String clientName);
+	RDFDatatype getBlobDataType();
 
-	InputStream open(String handle, long length, String digest) throws IOException;
+	/**
+	 * save and translate
+	 * 
+	 * @param blob
+	 * @return
+	 * @throws IOException
+	 */
+	Blob translate(Blob blob) throws IOException;
 }

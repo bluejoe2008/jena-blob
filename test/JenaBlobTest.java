@@ -1,11 +1,14 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 import jenablob.Blob;
 import jenablob.BlobLiteral;
-import jenablob.BlobModelFactory;
-import jenablob.io.InputStreamBlob;
+import jenablob.model.BlobModelFactory;
+import jenablob.store.ByteArrayBlobStorage;
+import jenablob.type.InputStreamBlob;
 import junit.framework.Assert;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -30,13 +33,18 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
  */
 public class JenaBlobTest
 {
-	byte[] INPUT_SOURCE;
+	private byte[] INPUT_SOURCE;
 
-	File INPUT_FILE = new File(".\\1.gif");
+	private File INPUT_FILE = new File(".\\1.gif");
+
+	private Model SAMPLE_MODEL;
 
 	public JenaBlobTest() throws IOException
 	{
 		INPUT_SOURCE = IOUtils.toByteArray(new FileInputStream(INPUT_FILE));
+		SAMPLE_MODEL = ModelFactory.createDefaultModel();
+		Literal lit = BlobLiteral.create(INPUT_FILE);
+		SAMPLE_MODEL.add(SAMPLE_MODEL.createResource("http://s"), SAMPLE_MODEL.createProperty("http://p"), lit);
 	}
 
 	@Test
@@ -53,8 +61,23 @@ public class JenaBlobTest
 	@Test
 	public void testMemModel() throws Exception
 	{
-		Model memModel = createTestModel();
-		doTestModel(memModel);
+		doTestModel(SAMPLE_MODEL, false);
+	}
+
+	@Test
+	public void testMemFileModel() throws Exception
+	{
+		Model model = BlobModelFactory.createMemModel(new File("/tmp/blob"));
+		model.add(SAMPLE_MODEL);
+		doTestModel(model, true);
+	}
+
+	@Test
+	public void testMemBytesArrayModel() throws Exception
+	{
+		Model model = BlobModelFactory.createMemModel(new ByteArrayBlobStorage());
+		model.add(SAMPLE_MODEL);
+		doTestModel(model, true);
 	}
 
 	@Test
@@ -68,14 +91,17 @@ public class JenaBlobTest
 		FileUtils.deleteDirectory(dir2);
 
 		Model model1 = BlobModelFactory.createTDBModel(dir1);
-		model1.add(createTestModel());
-		doTestModel(model1);
+		model1.add(SAMPLE_MODEL);
+		doTestModel(model1, true);
 
 		//update
 		model1.listStatements().next().changeObject("new string");
-		model1.write(System.out, "TURTLE");
+		Assert.assertEquals(1, model1.listStatements().toList().size());
+
 		model1.listStatements().next().changeObject(BlobLiteral.create(INPUT_FILE));
-		doTestModel(model1);
+		Assert.assertEquals(1, model1.listStatements().toList().size());
+
+		doTestModel(model1, true);
 
 		model1.close();
 
@@ -83,29 +109,36 @@ public class JenaBlobTest
 		FileUtils.copyDirectory(dir1, dir2);
 
 		model1 = BlobModelFactory.createTDBModel(dir1);
-		model1.removeAll();
+		model1.remove(model1.listStatements().next());
+		Assert.assertEquals(0, model1.listStatements().toList().size());
+		model1.close();
+		Assert.assertEquals(0, new File(dir1, "blob").list().length);
 
 		//read
 		Model model2 = BlobModelFactory.createTDBModel(dir2);
-		doTestModel(model2);
-		//delete
+		doTestModel(model2, true);
+		//removeAll
 		model2.removeAll();
+		Assert.assertEquals(0, model2.listStatements().toList().size());
 		model2.close();
-
-		//now test query on blob
+		Assert.assertEquals(0, new File(dir2, "blob").list().length);
 	}
 
-	private Model createTestModel() throws IOException
+	private void doTestModel(Model model, boolean reload) throws IOException
 	{
-		Model model = ModelFactory.createDefaultModel();
-		Literal lit = BlobLiteral.create(INPUT_FILE);
-		model.add(model.createResource("s"), model.createProperty("p"), lit);
-		return model;
-	}
-
-	private void doTestModel(Model model) throws IOException
-	{
+		System.out.println("-------------------------------------");
 		model.write(System.out, "TURTLE");
+
+		if (reload)
+		{
+			StringWriter sw = new StringWriter();
+			model.write(sw, "TURTLE");
+			model.read(new StringReader(sw.getBuffer().toString()), null, "TURTLE");
+
+			System.err.println("-------------------------------------");
+			model.write(System.err, "TURTLE");
+		}
+
 		doTestStatements(model);
 		doTestQuery(model);
 		doTestBlobSPARQLQuery(model);

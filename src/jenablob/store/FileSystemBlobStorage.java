@@ -6,53 +6,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jenablob.Blob;
+import jenablob.InputStreamConsumer;
+import jenablob.type.FileBlob;
+import jenablob.type.FileBlobDataType;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+
+import com.hp.hpl.jena.datatypes.RDFDatatype;
 
 /**
  * @author bluejoe2008@gmail.com
  */
 public class FileSystemBlobStorage implements BlobStorage
 {
-	class FileSystemBlobWriter implements BlobWriter
-	{
-		private BlobStorage _blobStorage;
-
-		private String _id;
-
-		public FileSystemBlobWriter(BlobStorage blobStorage, String id)
-		{
-			_blobStorage = blobStorage;
-			_id = id;
-		}
-
-		public BlobStorage getBlobStorage()
-		{
-			return _blobStorage;
-		}
-
-		public String save(InputStream is) throws IOException
-		{
-			String fileName = String.format("%s/%d.bin", _id, System.currentTimeMillis());
-			File file = new File(_rootDir, fileName);
-			file.getParentFile().mkdirs();
-			FileOutputStream fos = new FileOutputStream(file);
-			IOUtils.copyLarge(is, fos);
-			fos.close();
-
-			String digestFileName = fileName.replaceAll("\\.bin", "\\.md5");
-			File digestFile = new File(_rootDir, digestFileName);
-			FileInputStream fis = new FileInputStream(file);
-			String digest = DigestUtils.md5Hex(fis);
-			FileOutputStream dfos = new FileOutputStream(digestFile);
-			dfos.write(digest.getBytes());
-			dfos.close();
-
-			return fileName;
-		}
-	}
-
 	private File _rootDir;
 
 	public FileSystemBlobStorage(File rootDir)
@@ -60,36 +29,68 @@ public class FileSystemBlobStorage implements BlobStorage
 		_rootDir = rootDir;
 	}
 
-	public void delete(String handle) throws IOException
+	public void delete(Blob blob) throws IOException
 	{
+		String handle = ((FileBlob) blob).getFileHandle();
 		new File(_rootDir, handle).delete();
-		new File(_rootDir, handle.replaceAll("\\.bin", "\\.md5")).delete();
+		new File(_rootDir, handle.replaceAll("\\.bin", ".md5")).delete();
 	}
 
-	public BlobWriter getNamedWriter(String clientName)
+	public RDFDatatype getBlobDataType()
 	{
-		String id = DigestUtils.md5Hex(clientName.getBytes());
-		return new FileSystemBlobWriter(this, id);
+		return FileBlobDataType.DATA_TYPE;
 	}
 
-	public InputStream open(String handle, long length, String digest) throws IOException
+	public InputStream open(Blob blob) throws IOException
 	{
-		//TODO: check md5 digest
+		String digest = blob.getDigest();
+		long length = blob.length();
+		String handle = ((FileBlob) blob).getFileHandle();
+
 		File file = new File(_rootDir, handle);
 		if (file.length() != length)
 		{
-			throw new BadBlobInputStreamException(handle);
+			throw new FailedToOpenStream(blob);
 		}
 
 		File digestFile = new File(_rootDir, handle.replaceAll("\\.bin", "\\.md5"));
 		FileInputStream fis = new FileInputStream(digestFile);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		IOUtils.copy(fis, baos);
+		fis.close();
+		
 		if (!digest.equals(new String(baos.toByteArray())))
 		{
-			throw new BadBlobInputStreamException(handle);
+			throw new FailedToOpenStream(blob);
 		}
 
 		return new FileInputStream(file);
+	}
+
+	public Blob translate(Blob blob) throws IOException
+	{
+		String fileName = String.format("%d.bin", System.currentTimeMillis());
+		File file = new File(_rootDir, fileName);
+		file.getParentFile().mkdirs();
+		final FileOutputStream fos = new FileOutputStream(file);
+		blob.read(new InputStreamConsumer<Long>()
+		{
+			public Long consume(InputStream is) throws IOException
+			{
+				return IOUtils.copyLarge(is, fos);
+			}
+		});
+		fos.close();
+
+		String digestFileName = fileName.replaceAll("\\.bin", ".md5");
+		File digestFile = new File(_rootDir, digestFileName);
+		FileInputStream fis = new FileInputStream(file);
+		String digest = DigestUtils.md5Hex(fis);
+		fis.close();
+		FileOutputStream dfos = new FileOutputStream(digestFile);
+		dfos.write(digest.getBytes());
+		dfos.close();
+
+		return new FileBlob(this, fileName, file.length(), null, digest);
 	}
 }
