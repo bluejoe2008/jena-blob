@@ -17,7 +17,12 @@
 	</repositories>
 
 	<dependencies>
-
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
@@ -58,11 +63,13 @@
 			<artifactId>lucene-icu4j</artifactId>
 			<version>3.2.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.jena/jena-iri -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-iri</artifactId>
-			<version>1.0.2-SNAPSHOT</version>
+			<version>1.1.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.directory.studio</groupId>
 			<artifactId>org.slf4j.api</artifactId>
