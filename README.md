@@ -1,7 +1,12 @@
 jena-blob
 =========
 
-write/read/query BLOBs(binary large objects) in Jena framework
+[![GitHub issues](https://img.shields.io/github/issues/bluejoe2008/jena-blob.svg)](https://github.com/bluejoe2008/jena-blob/issues)
+[![GitHub forks](https://img.shields.io/github/forks/bluejoe2008/jena-blob.svg)](https://github.com/bluejoe2008/jena-blob/network)
+[![GitHub stars](https://img.shields.io/github/stars/bluejoe2008/jena-blob.svg)](https://github.com/bluejoe2008/jena-blob/stargazers)
+[![GitHub license](https://img.shields.io/github/license/bluejoe2008/jena-blob.svg)](https://github.com/bluejoe2008/jena-blob/blob/master/LICENSE)
+
+jena-blob write/read/query BLOBs(binary large objects) in Jena framework
 
 jena-blob enables RDF stores to manage both structured data and unstructred data 
 
